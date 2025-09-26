@@ -3,6 +3,7 @@ import { Play, Pause, Download, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import type { TTSSettings } from "./SettingsPanel";
 
 interface MainContentProps {
@@ -47,26 +48,29 @@ export function MainContent({ settings, onGenerationStateChange }: MainContentPr
     onGenerationStateChange(true);
 
     try {
-      // Note: This would need to be implemented with a backend API
-      // since OpenAI API requires server-side handling
-      const response = await fetch('/api/generate-speech', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Call Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('generate-speech', {
+        body: {
           text: text.trim(),
           voice: settings.voice,
           model: settings.model,
           speed: settings.speed,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate speech');
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error(error.message || 'Failed to generate speech');
       }
 
-      const audioBlob = await response.blob();
+      if (!data || !data.audioContent) {
+        throw new Error('No audio content received');
+      }
+
+      // Convert base64 to blob and create URL
+      const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], {
+        type: 'audio/mpeg'
+      });
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
 
@@ -76,9 +80,10 @@ export function MainContent({ settings, onGenerationStateChange }: MainContentPr
       });
     } catch (error) {
       console.error('Speech generation error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate speech';
       toast({
         title: "Generation failed",
-        description: "Please check your API key and try again. For now, this is a demo interface.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
