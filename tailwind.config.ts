@@ -57,6 +57,18 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "tts": {
+          "sidebar-bg": "hsl(var(--sidebar-bg))",
+          "sidebar-foreground": "hsl(var(--sidebar-foreground))",
+          "sidebar-active": "hsl(var(--sidebar-active))",
+          "sidebar-active-bg": "hsl(var(--sidebar-active-bg))",
+          "text-area-bg": "hsl(var(--text-area-bg))",
+          "settings-bg": "hsl(var(--settings-bg))",
+          "slider-track": "hsl(var(--slider-track))",
+          "slider-thumb": "hsl(var(--slider-thumb))",
+          "suggestion-bg": "hsl(var(--suggestion-bg))",
+          "suggestion-hover": "hsl(var(--suggestion-hover))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
