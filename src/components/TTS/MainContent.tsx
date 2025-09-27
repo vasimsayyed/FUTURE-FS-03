@@ -63,6 +63,10 @@ export function MainContent({ settings, onGenerationStateChange }: MainContentPr
         throw new Error(error.message || 'Failed to generate speech');
       }
 
+      if (data?.error) {
+        throw new Error(typeof data.error === 'string' ? data.error : (data.error?.message ?? 'Generation failed'));
+      }
+
       if (!data || !data.audioContent) {
         throw new Error('No audio content received');
       }

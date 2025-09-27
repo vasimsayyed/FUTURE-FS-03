@@ -43,9 +43,22 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+      const raw = await response.text();
+      let message = `OpenAI API error: ${response.status} ${response.statusText}`;
+      let code: string | undefined = undefined;
+      try {
+        const j = JSON.parse(raw);
+        message = j?.error?.message || message;
+        code = j?.error?.code || String(response.status);
+      } catch (_) {
+        // ignore JSON parse error
+      }
+      console.error('OpenAI API error:', raw);
+      // Return 200 so Supabase client exposes the response body to the frontend
+      return new Response(
+        JSON.stringify({ error: message, errorCode: code }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Convert audio buffer to base64
@@ -65,10 +78,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in generate-speech function:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+    // Return 200 so frontend can access the error message
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: errorMessage, errorCode: 'internal_error' }),
       {
-        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },
     );
