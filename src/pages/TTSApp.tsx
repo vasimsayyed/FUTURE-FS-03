@@ -4,6 +4,7 @@ import { MainContent } from "@/components/TTS/MainContent";
 import { SettingsPanel, type TTSSettings } from "@/components/TTS/SettingsPanel";
 
 export default function TTSApp() {
+  console.log("TTSApp component rendering");
   const [activeSection, setActiveSection] = useState("text-to-speech");
   const [isGenerating, setIsGenerating] = useState(false);
   const [settings, setSettings] = useState<TTSSettings>({
@@ -14,6 +15,7 @@ export default function TTSApp() {
 
   // Update page title and meta
   useEffect(() => {
+    console.log("TTSApp useEffect running");
     document.title = "OpenAI Text to Speech";
     
     // Update meta description
@@ -23,6 +25,8 @@ export default function TTSApp() {
     }
   }, []);
 
+  console.log("TTSApp rendering with activeSection:", activeSection);
+  
   return (
     <div className="flex h-screen bg-background">
       <Sidebar 
